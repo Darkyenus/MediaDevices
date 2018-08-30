@@ -9,14 +9,9 @@ using PortableDeviceTypesLib;
 using IPortableDeviceKeyCollection = PortableDeviceApiLib.IPortableDeviceKeyCollection;
 using IPortableDeviceValues = PortableDeviceApiLib.IPortableDeviceValues;
 using IPortableDevicePropVariantCollection = PortableDeviceApiLib.IPortableDevicePropVariantCollection;
-using PropertyKey = PortableDeviceApiLib._tagpropertykey;
-using PROPVARIANT = PortableDeviceApiLib.tag_inner_PROPVARIANT;
-using MediaDevices.Internal;
-using System.Reflection;
 using System.Text;
 
-namespace MediaDevices.Internal
-{
+namespace MediaDevices.Internal {
 
     [DebuggerDisplay("{this.Type} - {this.Name} - {this.Id}")]
     internal class Item
@@ -293,41 +288,57 @@ namespace MediaDevices.Internal
 
         public IEnumerable<Item> GetChildren()
         {
-            this.device.deviceContent.EnumObjects(0, this.Id, null, out IEnumPortableDeviceObjectIDs objectIds);
+            List<Item> result = new List<Item>();
 
-            uint fetched = 0;
-            objectIds.Next(1, out string objectId, ref fetched);
-            while (fetched > 0)
-            {
-                Item item = Item.Create(this.device, objectId, this.FullName);
-                yield return item;
-                objectIds.Next(1, out objectId, ref fetched);
+            this.device.deviceContent.EnumObjects(0, this.Id, null, out IEnumPortableDeviceObjectIDs objectIds);
+            if (objectIds == null) {
+                Trace.WriteLine("IPortableDeviceContent.EnumObjects failed");
+                return result;
             }
+
+            while (true) {
+                uint fetched = 0;
+                objectIds.Next(1, out string objectId, ref fetched);
+                if (fetched == 0) {
+                    break;
+                } else if (fetched > 1) {
+                    Trace.WriteLine("IEnumPortableDeviceObjectIDs.Next returned more values than expected: " + fetched);
+                }
+                result.Add(Item.Create(this.device, objectId, this.FullName));
+            }
+
+            return result;
         }
 
         public IEnumerable<Item> GetChildren(string pattern, SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
-            this.device.deviceContent.EnumObjects(0, this.Id, null, out IEnumPortableDeviceObjectIDs objectIds);
+            List<Item> result = new List<Item>();
 
-            uint fetched = 0;
-            objectIds.Next(1, out string objectId, ref fetched);
-            while (fetched > 0)
-            {
-                Item item = Item.Create(this.device, objectId, this.FullName);
-                if (pattern == null || Regex.IsMatch(item.Name, pattern, RegexOptions.IgnoreCase))
-                {
-                    yield return item;
-                }
-                if (searchOption == SearchOption.AllDirectories && item.Type != ItemType.File)
-                {
-                    var children = item.GetChildren(pattern, searchOption);
-                    foreach (var c in children)
-                    {
-                        yield return c;
-                    }
-                }
-                objectIds.Next(1, out objectId, ref fetched);
+            this.device.deviceContent.EnumObjects(0, this.Id, null, out IEnumPortableDeviceObjectIDs objectIds);
+            if (objectIds == null) {
+                Trace.WriteLine("IPortableDeviceContent.EnumObjects failed");
+                return result;
             }
+
+            while (true) {
+                uint fetched = 0;
+                objectIds.Next(1, out string objectId, ref fetched);
+                if (fetched == 0) {
+                    break;
+                } else if (fetched > 1) {
+                    Trace.WriteLine("IEnumPortableDeviceObjectIDs.Next returned more values than expected: " + fetched);
+                }
+                var item = Item.Create(this.device, objectId, this.FullName);
+                if (pattern == null || Regex.IsMatch(item.Name, pattern, RegexOptions.IgnoreCase)) {
+                    result.Add(item);
+                }
+
+                if (searchOption == SearchOption.AllDirectories && item.Type != ItemType.File) {
+                    result.AddRange(item.GetChildren(pattern, searchOption));
+                }
+            }
+
+            return result;
         }
 
         internal Item CreateSubdirectory(string path)
