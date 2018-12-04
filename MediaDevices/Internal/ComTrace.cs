@@ -68,21 +68,24 @@ namespace MediaDevices.Internal
             {
                 PropertyKey key = new PropertyKey();
                 PROPVARIANT val = new PROPVARIANT();
-                values.GetAt(i, ref key, ref val);
+                try {
+                    values.GetAt(i, ref key, ref val);
 
-                FieldInfo field = FindPropertyKeyField(key);
-                PropVariant vari = (PropVariant)val;
+                    FieldInfo field = FindPropertyKeyField(key);
+                    PropVariant vari = val;
 
-                string fieldName = field?.Name ?? $"{key.fmtid}, {key.pid}";
+                    string fieldName = field?.Name ?? $"{key.fmtid}, {key.pid}";
 
-                switch ((VarType)vari.variantType)
-                {
-                case VarType.VT_CLSID:
-                    Trace.WriteLine($"##### {fieldName} = {FindGuidField(vari.ToGuid())?.Name ?? vari.ToString()}");
-                    break;
-                default:
-                    Trace.WriteLine($"##### {fieldName} = {vari.ToString()}");
-                    break;
+                    switch (vari.variantType) {
+                        case VarType.VT_CLSID:
+                            Trace.WriteLine($"##### {fieldName} = {FindGuidField(vari.ToGuid())?.Name ?? vari.ToString()}");
+                            break;
+                        default:
+                            Trace.WriteLine($"##### {fieldName} = {vari.ToString()}");
+                            break;
+                    }
+                } finally {
+                    ComHelper.PropVariantClear(ref val);
                 }
             }
         }

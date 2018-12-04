@@ -112,19 +112,7 @@ namespace MediaDevices.Internal
 
         public bool Has(PropertyKey key)
         {
-            uint count = 0;
-            this.result.GetCount(ref count);
-            for (uint i = 0; i < count; i++)
-            {
-                PropertyKey k = new PropertyKey();
-                PROPVARIANT v = new PROPVARIANT();
-                this.result.GetAt(i, ref k, ref v);
-                if (key.fmtid == k.fmtid && key.pid == k.pid)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return ComHelper.HasKeyValue(result, key);
         }
 
         public bool Send(PortableDevice device)

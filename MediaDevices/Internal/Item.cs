@@ -215,72 +215,74 @@ namespace MediaDevices.Internal
             {
                 PropertyKey key = new PropertyKey();
                 PROPVARIANT val = new PROPVARIANT();
-                values.GetAt(i, ref key, ref val);
+                try {
+                    values.GetAt(i, ref key, ref val);
 
-                if (key.fmtid == WPD.OBJECT_PROPERTIES_V1)
-                {
-                    switch ((ObjectProperties)key.pid)
-                    {
-                    case ObjectProperties.ContentType:
-                        this.ContentType = PropVariant.FromValue(val);
-                        break;
+                    if (key.fmtid == WPD.OBJECT_PROPERTIES_V1) {
+                        switch ((ObjectProperties)key.pid) {
+                            case ObjectProperties.ContentType:
+                                this.ContentType = PropVariant.FromValue(val);
+                                break;
 
-                    case ObjectProperties.Name:
-                        this.name = PropVariant.FromValue(val);
-                        break;
+                            case ObjectProperties.Name:
+                                this.name = PropVariant.FromValue(val);
+                                break;
 
-                    case ObjectProperties.OriginalFileName:
-                        this.OriginalFileName = PropVariant.FromValue(val);
-                        break;
+                            case ObjectProperties.OriginalFileName:
+                                this.OriginalFileName = PropVariant.FromValue(val);
+                                break;
 
-                    case ObjectProperties.HintLocationDisplayName:
-                        this.HintLocationName = PropVariant.FromValue(val);
-                        break;
+                            case ObjectProperties.HintLocationDisplayName:
+                                this.HintLocationName = PropVariant.FromValue(val);
+                                break;
 
-                    case ObjectProperties.ContainerFunctionalObjectId:
-                        this.ParentContainerId = PropVariant.FromValue(val);
-                        break;
+                            case ObjectProperties.ContainerFunctionalObjectId:
+                                this.ParentContainerId = PropVariant.FromValue(val);
+                                break;
 
-                    case ObjectProperties.Size:
-                        this.Size = PropVariant.FromValue(val);
-                        break;
+                            case ObjectProperties.Size:
+                                this.Size = PropVariant.FromValue(val);
+                                break;
 
-                    case ObjectProperties.DateCreated:
-                        this.DateCreated = PropVariant.FromValue(val);
-                        break;
+                            case ObjectProperties.DateCreated:
+                                this.DateCreated = PropVariant.FromValue(val);
+                                break;
 
-                    case ObjectProperties.DateModified:
-                        this.DateModified = PropVariant.FromValue(val);
-                        break;
+                            case ObjectProperties.DateModified:
+                                this.DateModified = PropVariant.FromValue(val);
+                                break;
 
-                    case ObjectProperties.DateAuthored:
-                        this.DateAuthored = PropVariant.FromValue(val);
-                        break;
+                            case ObjectProperties.DateAuthored:
+                                this.DateAuthored = PropVariant.FromValue(val);
+                                break;
 
-                    case ObjectProperties.CanDelete:
-                        this.CanDelete = PropVariant.FromValue(val);
-                        break;
+                            case ObjectProperties.CanDelete:
+                                this.CanDelete = PropVariant.FromValue(val);
+                                break;
 
-                    case ObjectProperties.IsSystem:
-                        this.IsSystem = PropVariant.FromValue(val);
-                        break;
+                            case ObjectProperties.IsSystem:
+                                this.IsSystem = PropVariant.FromValue(val);
+                                break;
 
-                    case ObjectProperties.IsHidden:
-                        this.IsHidden = PropVariant.FromValue(val);
-                        break;
+                            case ObjectProperties.IsHidden:
+                                this.IsHidden = PropVariant.FromValue(val);
+                                break;
 
-                    case ObjectProperties.IsDrmProtected:
-                        this.IsDRMProtected = PropVariant.FromValue(val);
-                        break;
+                            case ObjectProperties.IsDrmProtected:
+                                this.IsDRMProtected = PropVariant.FromValue(val);
+                                break;
 
-                    case ObjectProperties.ParentId:
-                        this.ParentId = PropVariant.FromValue(val);
-                        break;
+                            case ObjectProperties.ParentId:
+                                this.ParentId = PropVariant.FromValue(val);
+                                break;
 
-                    case ObjectProperties.PersistentUniqueId:
-                        this.PersistentUniqueId = PropVariant.FromValue(val);
-                        break;
+                            case ObjectProperties.PersistentUniqueId:
+                                this.PersistentUniqueId = PropVariant.FromValue(val);
+                                break;
+                        }
                     }
+                } finally {
+                    ComHelper.PropVariantClear(ref val);
                 }
             }
         }
