@@ -1,6 +1,6 @@
 ﻿namespace MediaDevices.Internal
 {
-    internal enum VarType : short
+    internal enum VarType : ushort
     {
         VT_EMPTY = 0,
         VT_NULL = 1,

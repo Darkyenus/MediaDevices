@@ -24,7 +24,7 @@ namespace MediaDevices.Internal
         static Item()
         {
             // key collection with all used properties
-            keyCollection = (IPortableDeviceKeyCollection)new PortableDeviceTypesLib.PortableDeviceKeyCollection();
+            keyCollection = (IPortableDeviceKeyCollection)new PortableDeviceKeyCollection();
             keyCollection.Add(WPD.OBJECT_CONTENT_TYPE);
             keyCollection.Add(WPD.OBJECT_NAME);
             keyCollection.Add(WPD.OBJECT_ORIGINAL_FILE_NAME);
@@ -101,9 +101,12 @@ namespace MediaDevices.Internal
         public static Item GetFromPersistentUniqueId(MediaDevice device, string persistentUniqueId)
         {
             // fill collection with id to request
-            var propVariantPUID = PropVariant.StringToPropVariant(persistentUniqueId);
             var collection = (IPortableDevicePropVariantCollection)new PortableDevicePropVariantCollection();
-            collection.Add(ref propVariantPUID);
+            {
+                PROPVARIANT propVariantPUID = PropVariantUtil.NewWithString(persistentUniqueId);
+                collection.Add(ref propVariantPUID);
+                propVariantPUID.Dispose();
+            }
 
             // request id collection           
             device.deviceContent.GetObjectIDsFromPersistentUniqueIDs(collection, out IPortableDevicePropVariantCollection results);
@@ -221,68 +224,68 @@ namespace MediaDevices.Internal
                     if (key.fmtid == WPD.OBJECT_PROPERTIES_V1) {
                         switch ((ObjectProperties)key.pid) {
                             case ObjectProperties.ContentType:
-                                this.ContentType = PropVariant.FromValue(val);
+                                this.ContentType = val.GetGuid();
                                 break;
 
                             case ObjectProperties.Name:
-                                this.name = PropVariant.FromValue(val);
+                                this.name = val.GetString();
                                 break;
 
                             case ObjectProperties.OriginalFileName:
-                                this.OriginalFileName = PropVariant.FromValue(val);
+                                this.OriginalFileName = val.GetString();
                                 break;
 
                             case ObjectProperties.HintLocationDisplayName:
-                                this.HintLocationName = PropVariant.FromValue(val);
+                                this.HintLocationName = val.GetString();
                                 break;
 
                             case ObjectProperties.ContainerFunctionalObjectId:
-                                this.ParentContainerId = PropVariant.FromValue(val);
+                                this.ParentContainerId = val.GetString();
                                 break;
 
                             case ObjectProperties.Size:
-                                this.Size = PropVariant.FromValue(val);
+                                this.Size = val.GetULong();
                                 break;
 
                             case ObjectProperties.DateCreated:
-                                this.DateCreated = PropVariant.FromValue(val);
+                                this.DateCreated = val.GetDate();
                                 break;
 
                             case ObjectProperties.DateModified:
-                                this.DateModified = PropVariant.FromValue(val);
+                                this.DateModified = val.GetDate();
                                 break;
 
                             case ObjectProperties.DateAuthored:
-                                this.DateAuthored = PropVariant.FromValue(val);
+                                this.DateAuthored = val.GetDate();
                                 break;
 
                             case ObjectProperties.CanDelete:
-                                this.CanDelete = PropVariant.FromValue(val);
+                                this.CanDelete = val.GetBool();
                                 break;
 
                             case ObjectProperties.IsSystem:
-                                this.IsSystem = PropVariant.FromValue(val);
+                                this.IsSystem = val.GetBool();
                                 break;
 
                             case ObjectProperties.IsHidden:
-                                this.IsHidden = PropVariant.FromValue(val);
+                                this.IsHidden = val.GetBool();
                                 break;
 
                             case ObjectProperties.IsDrmProtected:
-                                this.IsDRMProtected = PropVariant.FromValue(val);
+                                this.IsDRMProtected = val.GetBool();
                                 break;
 
                             case ObjectProperties.ParentId:
-                                this.ParentId = PropVariant.FromValue(val);
+                                this.ParentId = val.GetString();
                                 break;
 
                             case ObjectProperties.PersistentUniqueId:
-                                this.PersistentUniqueId = PropVariant.FromValue(val);
+                                this.PersistentUniqueId = val.GetString();
                                 break;
                         }
                     }
                 } finally {
-                    ComHelper.PropVariantClear(ref val);
+                    val.Dispose();
                 }
             }
         }
@@ -531,12 +534,15 @@ namespace MediaDevices.Internal
 
         public void Delete(bool recursive = false)
         {
-            var objectIdCollection = (IPortableDevicePropVariantCollection)new PortableDeviceTypesLib.PortableDevicePropVariantCollection();
+            var objectIdCollection = (IPortableDevicePropVariantCollection)new PortableDevicePropVariantCollection();
 
-            var propVariantValue = PropVariant.StringToPropVariant(this.Id);
-            objectIdCollection.Add(ref propVariantValue);
+            {
+                PROPVARIANT propVariantValue = PropVariantUtil.NewWithString(this.Id);
+                objectIdCollection.Add(ref propVariantValue);
+                propVariantValue.Dispose();
+            }
 
-            IPortableDevicePropVariantCollection results = (PortableDeviceApiLib.IPortableDevicePropVariantCollection) new PortableDevicePropVariantCollection();
+            IPortableDevicePropVariantCollection results = (IPortableDevicePropVariantCollection) new PortableDevicePropVariantCollection();
             // TODO: get the results back and handle failures correctly
             this.device.deviceContent.Delete(recursive ? PORTABLE_DEVICE_DELETE_WITH_RECURSION : PORTABLE_DEVICE_DELETE_NO_RECURSION, objectIdCollection, null);
 

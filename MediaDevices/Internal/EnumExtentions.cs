@@ -40,7 +40,9 @@ namespace MediaDevices.Internal
             {
                 PROPVARIANT val = new PROPVARIANT();
                 col.GetAt(i, ref val);
-                yield return GetEnumFromAttrGuid<TEnum>(PropVariant.FromValue(val));
+                var guid = val.GetGuid();
+                val.Dispose();
+                yield return GetEnumFromAttrGuid<TEnum>(guid);
             }
         }
 
@@ -80,7 +82,9 @@ namespace MediaDevices.Internal
             {
                 PROPVARIANT val = new PROPVARIANT();
                 col.GetAt(i, ref val);
-                yield return PropVariant.FromValue(val);
+                var guid = val.GetGuid();
+                val.Dispose();
+                yield return guid;
             }
         }
 
@@ -92,7 +96,9 @@ namespace MediaDevices.Internal
             {
                 PROPVARIANT val = new PROPVARIANT();
                 col.GetAt(i, ref val);
-                yield return PropVariant.FromValue(val);
+                var str = val.GetString();
+                val.Dispose();
+                yield return str;
             }
         }
     }

@@ -9,7 +9,7 @@ namespace MediaDeviceApp.ViewModel
     {
         MediaDevice device;
         private string description;
-        private List<int> opCodes;
+        private List<uint> opCodes;
 
 
 
@@ -47,7 +47,7 @@ namespace MediaDeviceApp.ViewModel
             }
         }
 
-        public List<int> OpCodes
+        public List<uint> OpCodes
         {
             get
             {

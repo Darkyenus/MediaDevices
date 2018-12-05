@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.InteropServices;
 using IPortableDeviceValues = PortableDeviceApiLib.IPortableDeviceValues;
 using PropertyKey = PortableDeviceApiLib._tagpropertykey;
 using PROPVARIANT = PortableDeviceApiLib.tag_inner_PROPVARIANT;
@@ -21,12 +20,11 @@ namespace MediaDevices.Internal
                     PROPVARIANT val = new PROPVARIANT();
                     try {
                         values.GetAt(i, ref key, ref val);
-                        if (key.fmtid == findKey.fmtid && key.pid == findKey.pid) {
-                            PropVariant pval = val;
-                            return pval.variantType != VarType.VT_ERROR;
+                        if (IsEqual(key, findKey)) {
+                            return val.GetVarType() != VarType.VT_ERROR;
                         }
                     } finally {
-                        PropVariantClear(ref val);
+                        val.Dispose();
                     }
                 }
                 
@@ -34,11 +32,6 @@ namespace MediaDevices.Internal
             catch { }
             return false;
         }
-
-        // http://www.pinvoke.net/default.aspx/iprop/PropVariantClear.html
-        // https://social.msdn.microsoft.com/Forums/windowsserver/en-US/ec242718-8738-4468-ae9d-9734113d2dea/quotipropdllquot-seems-to-be-missing-in-windows-server-2008-and-x64-systems?forum=winserver2008appcompatabilityandcertification
-        [DllImport("ole32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-        internal static extern int PropVariantClear(ref PROPVARIANT pVar);
 
         public static bool IsEqual(PropertyKey a, PropertyKey b)
         {
@@ -49,29 +42,18 @@ namespace MediaDevices.Internal
         {
             PROPVARIANT val;
             values.GetValue(key, out val);
-            return ((PropVariant)val).variantType;
-        }
-
-        internal static bool TryGetValue(this IPortableDeviceValues values, PropertyKey key, out PropVariant value)
-        {
-            if (values.HasKeyValue(key))
-            {
-                PROPVARIANT val;
-                values.GetValue(key, out val);
-                value = (PropVariant)val;
-                return true;
-            }
-            value = new PropVariant();
-            return false;
+            VarType result = val.GetVarType();
+            val.Dispose();
+            return result;
         }
 
         public static bool TryGetDateTimeValue(this IPortableDeviceValues values, PropertyKey key, out DateTime? value)
         {
-            if (values.HasKeyValue(key))
-            {
+            if (values.HasKeyValue(key)) {
                 PROPVARIANT val;
                 values.GetValue(key, out val);
-                value = ((PropVariant)val).ToDate(); 
+                value = val.GetDate();
+                val.Dispose();
                 return true;
             }
             value = null;
@@ -163,7 +145,8 @@ namespace MediaDevices.Internal
             {
                 PROPVARIANT val;
                 values.GetValue(key, out val);
-                value = ((PropVariant)val).ToByteArray();
+                value = val.GetByteArray();
+                val.Dispose();
                 return true;
             }
             value = null;

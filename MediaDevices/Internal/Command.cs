@@ -51,13 +51,14 @@ namespace MediaDevices.Internal
             this.values.SetIPortableDevicePropVariantCollectionValue(key, value);
         }
         
-        public void Add(PropertyKey key, IEnumerable<int> values)
+        public void Add(PropertyKey key, IEnumerable<uint> values)
         {
-            PortableDeviceApiLib.IPortableDevicePropVariantCollection col = (PortableDeviceApiLib.IPortableDevicePropVariantCollection) new PortableDevicePropVariantCollection();
+            IPortableDevicePropVariantCollection col = (IPortableDevicePropVariantCollection) new PortableDevicePropVariantCollection();
             foreach (var value in values)
             {
-                var var = PropVariant.IntToPropVariant(value);
+                PROPVARIANT var = PropVariantUtil.NewWithUInt(value);
                 col.Add(ref var);
+                var.Dispose();
             }
             this.values.SetIPortableDevicePropVariantCollectionValue(key, col);
         }
@@ -94,19 +95,36 @@ namespace MediaDevices.Internal
             return value;
         }
         
-        public IEnumerable<PropVariant> GetPropVariants(PropertyKey key) 
-        {
-            object obj = null;
-            this.result.GetIUnknownValue(key, out obj);
-            var col = obj as IPortableDevicePropVariantCollection;
+        private IPortableDevicePropVariantCollection GetPropVariantCollection(PropertyKey key) {
+            this.result.GetIUnknownValue(key, out object obj);
+            return obj as IPortableDevicePropVariantCollection;
+        }
         
+        public IEnumerable<string> GetStrings(PropertyKey key) {
+            var col = GetPropVariantCollection(key);
+
             uint count = 0;
             col.GetCount(ref count);
-            for (uint i = 0; i < count; i++)
-            {
+            for (uint i = 0; i < count; i++) {
                 PROPVARIANT val = new PROPVARIANT();
                 col.GetAt(i, ref val);
-                yield return PropVariant.FromValue(val);
+                string value = val.GetString();
+                val.Dispose();
+                yield return value;
+            }
+        }
+
+        public IEnumerable<uint> GetUInts(PropertyKey key) {
+            var col = GetPropVariantCollection(key);
+
+            uint count = 0;
+            col.GetCount(ref count);
+            for (uint i = 0; i < count; i++) {
+                PROPVARIANT val = new PROPVARIANT();
+                col.GetAt(i, ref val);
+                uint value = val.GetUInt();
+                val.Dispose();
+                yield return value;
             }
         }
 
@@ -119,8 +137,7 @@ namespace MediaDevices.Internal
         {
             device.SendCommand(0, this.values, out this.result);
 
-            int error = 0;
-            result.GetErrorValue(WPD.PROPERTY_COMMON_HRESULT, out error);
+            result.GetErrorValue(WPD.PROPERTY_COMMON_HRESULT, out int error);
             switch ((HResult)error)
             {
             case HResult.S_OK:
