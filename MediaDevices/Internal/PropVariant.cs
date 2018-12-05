@@ -314,23 +314,17 @@ namespace MediaDevices.Internal {
         }
 
         public static void Dispose(this PROPVARIANT prop) {
-            try {
-                unsafe {
-                    PropVariantClear(ref prop);
-                }
-            } catch (Exception e) {
-                Trace.WriteLine("Dispose-fail for:");
-                Trace.WriteLine(prop.ToDebugString());
-                Trace.WriteLine(e.ToString());
-            }
+            PropVariantClear(ref prop);
         }
 
+        /// For this to work, PROPVARIANT must be blittable (=not contain any marshalled types), otherwise all sorts of weird things happen.
         // http://www.pinvoke.net/default.aspx/iprop/PropVariantClear.html
         // https://social.msdn.microsoft.com/Forums/windowsserver/en-US/ec242718-8738-4468-ae9d-9734113d2dea/quotipropdllquot-seems-to-be-missing-in-windows-server-2008-and-x64-systems?forum=winserver2008appcompatabilityandcertification
         // https://referencesource.microsoft.com/#windowsbase/Base/MS/Internal/Interop/NativeStructs.cs
         [DllImport("ole32.dll")]
         internal static unsafe extern int PropVariantClear(ref PROPVARIANT pVar);
 
+        /// Create a new PROPVARIANT of VT_LPWSTR type. Must be disposed when no longer used.
         public static PROPVARIANT NewWithString(string value) {
             PROPVARIANT result = new PROPVARIANT {
                 vt = (ushort)VarType.VT_LPWSTR
@@ -340,6 +334,7 @@ namespace MediaDevices.Internal {
             return result;
         }
 
+        /// Create a new PROPVARIANT of VT_UI4 type. Must be disposed when no longer used.
         public static PROPVARIANT NewWithUInt(uint value) {
             PROPVARIANT result = new PROPVARIANT {
                 vt = (ushort)VarType.VT_UI4
