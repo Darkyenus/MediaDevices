@@ -43,14 +43,13 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Interop.PortableDeviceApiLib">
-      <HintPath>Interop\Interop.PortableDeviceApiLib.dll</HintPath>
+    <Reference Include="PortableDeviceApiLib">
+      <HintPath>Interop\x86\PortableDeviceApiLib.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="Interop.PortableDeviceTypesLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="PortableDeviceTypesLib">
+      <HintPath>Interop\x86\PortableDeviceTypesLib.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
-      <HintPath>Interop\Interop.PortableDeviceTypesLib.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
